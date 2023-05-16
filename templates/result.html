@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Most Common Colors - Results</title>
+  </head>
+  <body>
+    <h1>Most Common Colors - Results
+    </h1>
+    <img src="data:image/jpeg;base64,{{ image_data|b64encode }}" alt="Uploaded Image">
+    <h2>Most Common Colors:</h2>
+    <ul>
+      {% for color, count in most_common_colors %}
+        <li style="background-color: rgb{{ color }};">Count: {{ count }}</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
