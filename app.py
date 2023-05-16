@@ -1,41 +1,43 @@
 from flask import Flask, render_template, request
 from PIL import Image
-from collections import Counter
 import numpy as np
-import io
-import base64
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        # Get the uploaded file from the form
+        file = request.files['file']
+        
+        # Process the file and find the most common colors
+        # ...
+        
+        # Return the result as a template variable
+        return render_template('result.html', colors=colors)
+    
+    # Render the file upload form
     return render_template('index.html')
 
-@app.route('/upload', methods=['POST'])
-def upload():
-    # Get the uploaded image file
-    image_file = request.files['image']
+def find_colors(file):
+    # Open the uploaded image
+    img = Image.open(file)
 
-    # Load the image using Pillow
-    image = Image.open(image_file)
-
-    # Convert the image to RGB mode if it's in a different mode
-    if image.mode != 'RGB':
-        image = image.convert('RGB')
-
-    # Resize the image for faster processing (optional)
-    image.thumbnail((200, 200))
+    # Resize the image to reduce processing time
+    img = img.resize((100, 100))
 
     # Convert the image to a NumPy array
-    image_array = np.array(image)
+    arr = np.array(img)
 
-    # Flatten the array to a 2D list of pixels
-    pixels = image_array.reshape(-1, 3).tolist()
+    # Flatten the array and find the unique colors
+    colors, counts = np.unique(arr.reshape(-1, 3), axis=0, return_counts=True)
 
-    # Count the occurrence of each color
-    color_counts = Counter(tuple(pixel) for pixel in pixels)
+    # Sort the colors by frequency in descending order
+    sorted_indices = np.argsort(-counts)
+    colors = colors[sorted_indices]
 
-    # Find the most common colors
-    most_common_colors = color_counts.most_common(5)  # Change the number to get more or fewer colors
+    # Convert the colors from NumPy array to hex strings
+    hex_colors = ['#%02x%02x%02x' % tuple(color) for color in colors]
 
-    return render_template('result.html', image_data=image_file.read(), most_common_colors=most_common_colors)
+    # Return the most common colors
+    return hex_colors[:10]
